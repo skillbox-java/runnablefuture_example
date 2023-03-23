@@ -2,7 +2,6 @@ package runnable_example;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 
@@ -23,7 +22,7 @@ public class ResultCheckerExample implements Runnable {
 
                 RunnableFuture<String> future = futureIterator.next();
 
-                if (future.isDone() ) {
+                if (future.isDone()) {
                     completedTask++;
                     try {
                         System.out.println("Выполнена " + future.get());
