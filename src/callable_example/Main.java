@@ -1,6 +1,6 @@
 package callable_example;
 
-import java.util.HashMap;
+import java.util.Stack;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
@@ -12,15 +12,15 @@ public class Main {
         RunnableFuture<Integer> future2 = new FutureTask<>(new CallableExample(3000, "Задача 2"));
         RunnableFuture<Integer> future3 = new FutureTask<>(new CallableExample(20000, "Задача 3"));
 
-        HashMap<RunnableFuture<Integer>, Boolean> taskMap = new HashMap<>();
-        taskMap.put(future1, false);
-        taskMap.put(future2, false);
-        taskMap.put(future3, false);
+        Stack<RunnableFuture<Integer>> taskList = new Stack<>();
+        taskList.add(future1);
+        taskList.add(future2);
+        taskList.add(future3);
 
         ExecutorService executor = Executors.newFixedThreadPool(4);
-        taskMap.forEach((future, status) -> executor.execute(future));
+        taskList.forEach(executor::execute);
 
-        ResultCheckerExample resultCheckerExample = new ResultCheckerExample(taskMap);
+        ResultCheckerExample resultCheckerExample = new ResultCheckerExample(taskList);
         executor.execute(resultCheckerExample);
 
         executor.shutdown();

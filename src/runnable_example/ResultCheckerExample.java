@@ -1,15 +1,16 @@
 package runnable_example;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 
 public class ResultCheckerExample implements Runnable {
 
-    private final HashMap<RunnableFuture<String>, Boolean> runnableFutureList;
+    private final List<RunnableFuture<String>> runnableFutureList;
 
-    public ResultCheckerExample(HashMap<RunnableFuture<String>, Boolean> runnableFutureList) {
+    public ResultCheckerExample(List<RunnableFuture<String>> runnableFutureList) {
         this.runnableFutureList = runnableFutureList;
     }
 
@@ -18,13 +19,15 @@ public class ResultCheckerExample implements Runnable {
         int completedTask = 0;
 
         while (completedTask != 3) {
-            for (Map.Entry<RunnableFuture<String>, Boolean> future : runnableFutureList.entrySet()) {
+            for (Iterator<RunnableFuture<String>> futureIterator = runnableFutureList.iterator(); futureIterator.hasNext(); ) {
 
-                if (future.getKey().isDone() && !future.getValue()) {
+                RunnableFuture<String> future = futureIterator.next();
+
+                if (future.isDone() ) {
                     completedTask++;
-                    future.setValue(true);
                     try {
-                        System.out.println("Выполнена " + future.getKey().get());
+                        System.out.println("Выполнена " + future.get());
+                        futureIterator.remove();
                     } catch (InterruptedException | ExecutionException e) {
                         throw new RuntimeException(e);
                     }
@@ -32,7 +35,7 @@ public class ResultCheckerExample implements Runnable {
 
                 if (completedTask == 2) {
                     completedTask++;
-                    future.getKey().cancel(true);
+                    future.cancel(true);
                     System.out.println("Задача остановлена, результат её работы не требуется");
                 }
             }

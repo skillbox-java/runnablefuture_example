@@ -1,15 +1,15 @@
 package callable_example;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 
 public class ResultCheckerExample implements Runnable {
 
-    private final HashMap<RunnableFuture<Integer>, Boolean> runnableFutureList;
+    private final List<RunnableFuture<Integer>> runnableFutureList;
 
-    public ResultCheckerExample(HashMap<RunnableFuture<Integer>, Boolean> runnableFutureList) {
+    public ResultCheckerExample(List<RunnableFuture<Integer>> runnableFutureList) {
         this.runnableFutureList = runnableFutureList;
     }
 
@@ -18,24 +18,26 @@ public class ResultCheckerExample implements Runnable {
         int completedTask = 0;
 
         while (completedTask != 3) {
-            for (Map.Entry<RunnableFuture<Integer>, Boolean> future : runnableFutureList.entrySet()) {
+            for (Iterator<RunnableFuture<Integer>> futureIterator = runnableFutureList.iterator(); futureIterator.hasNext(); ) {
+                RunnableFuture<Integer> future = futureIterator.next();
 
-                if (future.getKey().isDone() && !future.getValue()) {
+                if (future.isDone()) {
                     completedTask++;
-                    future.setValue(true);
                     try {
-                        System.out.println("Задача выполнилась за: " + future.getKey().get() + " миллисекунд");
+                        System.out.println("Задача выполнилась за: " + future.get() + " миллисекунд");
+                        futureIterator.remove();
                     } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
                     }
                 }
 
                 if (completedTask == 2) {
                     completedTask++;
-                    future.getKey().cancel(true);
+                    future.cancel(true);
                     System.out.println("Задача остановлена, результат её работы не требуется");
                 }
             }
+
         }
 
     }
